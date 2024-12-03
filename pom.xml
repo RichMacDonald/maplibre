@@ -4,7 +4,7 @@
 
     <groupId>org.parttio</groupId>
     <artifactId>maplibre</artifactId>
-    <version>1.1.2-SNAPSHOT</version>
+    <version>1.1.2-SNAPSHOT-rjm</version>
     <name>MapLibreGL }&gt; add-on</name>
     <description>An extension to Vaadin that provides a Java API for MapLibreGL slippy map component with modern vector layer support.</description>
     <url>https://github.com/parttio/maplibre</url>
@@ -60,7 +60,7 @@
         <developerConnection>scm:git:ssh://git@github.com:/parttio/maplibre.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
-    
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -71,7 +71,7 @@
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/parttio/maplibre/issues</url>
-    </issueManagement>    
+    </issueManagement>
 
     <dependencies>
         <dependency>
@@ -94,6 +94,14 @@
             <artifactId>vaadin-js-loader</artifactId>
             <version>2.2.0</version>
         </dependency>
+
+		<!--Nullability annotations-->
+		<dependency>
+		  <groupId>org.jspecify</groupId>
+		  <artifactId>jspecify</artifactId>
+		  <version>1.0.0</version>
+		</dependency>
+
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-spring-boot-starter</artifactId>
@@ -174,7 +182,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <id>release</id>
