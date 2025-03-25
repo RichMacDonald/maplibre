@@ -151,6 +151,16 @@ public class Marker extends GeometryLayer {
                 """, Map.of("id", id, "html", rawHtml));
     }
 
+    //Argument is a javascript function (closure) that returns something to display as html
+    //not working
+    public void setHtmlFunction(String javscriptFunction) {
+        map.js("""
+                    const marker = component.markers['$id'];
+                    const element = marker.getElement();
+                    element.innerHTML = eval(javscriptFunction);
+                """, Map.of("id", id));
+    }
+
     public void setOffset(double x, double y) {
         map.js("""
                     const marker = component.markers['$id'];
