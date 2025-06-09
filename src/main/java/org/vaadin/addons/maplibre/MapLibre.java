@@ -390,6 +390,20 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 """.formatted(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY(), padding));
     }
 
+    /**
+     * https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/FitBoundsOptions/
+     *
+     * easeTo = true is a smoother transition
+     * easeTo = false is the default is the flyTo
+     */
+    public void fitTo(Envelope envelope, double padding, boolean easeTo, int maxDurationMillis) {
+        fitTo("""
+                    const bounds = new maplibregl.LngLatBounds(
+                    [%s, %s], [%s, %s]);;
+                    map.fitBounds(bounds, {padding: %s, linear: %s, maxDuration: %s});
+                """.formatted(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY(), padding, easeTo, maxDurationMillis));
+    }
+
     private void fitTo(String envelope) {
         js(envelope);
     }
@@ -401,11 +415,11 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public void flyTo(double x, double y, Double zoom) {
         js("""
                     const opts = {
-                        center: [%s, %s]                    
+                        center: [%s, %s]
                     }
                     const z = %s;
                     if(z != null) {
-                        opts.zoom = z;                   
+                        opts.zoom = z;
                     }
                     map.flyTo(opts);
                 """.formatted(x, y, zoom));
@@ -482,7 +496,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                         evt.point = JSON.stringify(e.point);
                         component.dispatchEvent(evt);
                     });
-                                
+
                     """);
 
             getElement().addEventListener("map-click", domEvent -> {
@@ -504,7 +518,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 const bbox = JSON.parse('$bbox');
                 const b = new maplibregl.LngLatBounds(bbox.coordinates[0],bbox.coordinates[1]);
                 bbox.coordinates.forEach(c => {
-                    b.extend([c[0],c[1]]);                    
+                    b.extend([c[0],c[1]]);
                 });
                 map.fitBounds(b, {padding: 20});
                 """, Map.of("bbox", geojson));
