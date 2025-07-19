@@ -1,15 +1,14 @@
 package org.vaadin.addons.maplibre;
 
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.platform.commons.util.CollectionUtils;
 import org.vaadin.addons.maplibre.dto.CircleLayerDefinition;
 import org.vaadin.addons.maplibre.dto.CirclePaint;
 import org.vaadin.addons.maplibre.dto.FillLayerDefinition;
 import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
-import org.vaadin.addons.maplibre.dto.RgbaColor;
+import in.virit.color.RgbColor;
 import org.vaadin.addons.maplibre.dto.SymbolLayerDefinition;
 import org.vaadin.addons.maplibre.dto.SymbolLayout;
 import org.vaadin.addons.maplibre.dto.SymbolPaint;
@@ -55,6 +54,10 @@ public class FinnishOpenDataOverTheSea extends VerticalLayout {
             setZoomLevel(11);
             setHeight("50vh");
 
+            this.addMoveEndListener(event -> {
+                Notification.show("Map moved to " + getCenter() + " zoom level " + getZoomLevel());
+            });
+
             // This raw Vector Tile sources contains:
             // - Depth contours. areas and soundings by Traficom
             // - Fairways, beacons, etc. by Väylävirasto
@@ -81,7 +84,7 @@ public class FinnishOpenDataOverTheSea extends VerticalLayout {
             addSourceLayer(new LineLayerDefinition() {{
                 setSource(MERIDATA);
                 setSourceLayer("DepthContour");
-                setPaint(new LinePaint(new RgbaColor(109, 109, 184, 0.5), 1.0));
+                setPaint(new LinePaint(new RgbColor(109, 109, 184, 0.5), 1.0));
                 setMinZoom(12);
             }});
             // Above is the same as below
@@ -110,7 +113,7 @@ public class FinnishOpenDataOverTheSea extends VerticalLayout {
 
                 setLayout(new SymbolLayout() {{
                     setSymbolPlacement(SymbolPlacement.lineCenter);
-                    setTextField("{VALDCO}");
+                    setTextField("{VALDCO} ");
                     setTextFont("Open Sans Semibold");
                     setTextSize(Interpolate
                             .exponential(1.4)
@@ -165,7 +168,7 @@ public class FinnishOpenDataOverTheSea extends VerticalLayout {
                 setId("navigointilinjat");
                 setSource(MERIDATA);
                 setSourceLayer("navigointilinjat");
-                setPaint(new LinePaint(new RgbaColor(0, 200, 0, 0.9)));
+                setPaint(new LinePaint(new RgbColor(0, 200, 0, 0.9)));
                 setMinZoom(11);
             }});
 

@@ -3,18 +3,34 @@ package org.vaadin.addons.maplibre.dto;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.vaadin.addons.maplibre.dto.expressions.Expression;
 
+import javax.swing.*;
+
 public class SymbolLayout extends AbstractKebabCasedDto {
+
+    public enum IconAnchor {
+        center, left, right, top, bottom, topLeft, topRight, bottomLeft, bottomRight;
+
+        @Override
+        @JsonValue
+        public String toString() {
+            return camelToKebabCase(name());
+        }
+    }
 
     private String textField;
     private String[] textFont;
     private TextRotationAlignment textRotationAlignment;
     private TextTransform textTransform;
     private Object textSize;
+    private Integer textRotate;
+    private Boolean textAllowOverlap;
     private SymbolPlacement symbolPlacement;
     private String iconImage;
-    private Number iconSize;
+    private Object iconSize;
     private Object iconRotate;
+    private IconAnchor iconAnchor;
     private TextRotationAlignment iconRotationAlignment;
+    private Boolean iconAllowOverlap;
 
     public TextRotationAlignment getIconRotationAlignment() {
         return iconRotationAlignment;
@@ -24,7 +40,7 @@ public class SymbolLayout extends AbstractKebabCasedDto {
         this.iconRotationAlignment = iconRotationAlignment;
     }
 
-    public Number getIconSize() {
+    public Object getIconSize() {
         return iconSize;
     }
 
@@ -42,6 +58,18 @@ public class SymbolLayout extends AbstractKebabCasedDto {
 
     public void setIconSize(Number iconSize) {
         this.iconSize = iconSize;
+    }
+
+    public void setIconSize(Expression iconSize) {
+        this.iconSize = iconSize;
+    }
+
+    public IconAnchor getIconAnchor() {
+        return iconAnchor;
+    }
+
+    public void setIconAnchor(IconAnchor iconAnchor) {
+        this.iconAnchor = iconAnchor;
     }
 
     public String getTextField() {
@@ -108,11 +136,48 @@ public class SymbolLayout extends AbstractKebabCasedDto {
         this.iconImage = iconImage;
     }
 
+    public Integer getTextRotate() {
+        return textRotate;
+    }
+
+    public void setTextRotate(Integer textRotate) {
+        this.textRotate = textRotate;
+    }
+
+    public Boolean getIconAllowOverlap() {
+        return iconAllowOverlap;
+    }
+
+    public void setIconAllowOverlap(Boolean iconAllowOverlap) {
+        this.iconAllowOverlap = iconAllowOverlap;
+    }
+
+    public Boolean getTextAllowOverlap() {
+        return textAllowOverlap;
+    }
+
+    public void setTextAllowOverlap(Boolean textAllowOverlap) {
+        this.textAllowOverlap = textAllowOverlap;
+    }
+
     /**
      * https://maplibre.org/maplibre-style-spec/layers/#text-rotation-alignment
      */
     public enum TextRotationAlignment {
         map, viewport, viewportGlyph, auto;
+
+        @Override
+        @JsonValue
+        public String toString() {
+            return camelToKebabCase(name());
+        }
+    }
+
+    /**
+     * https://maplibre.org/maplibre-style-spec/layers/#icon-rotation-alignment
+     */
+    public enum RotationAlignment {
+        map, viewport, auto;
 
         @Override
         @JsonValue

@@ -4,9 +4,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.popover.Popover;
 import com.vaadin.flow.component.popover.PopoverVariant;
 import com.vaadin.flow.function.SerializableSupplier;
+import in.virit.color.Color;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.vaadin.addons.maplibre.dto.SymbolLayout;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -14,12 +16,25 @@ import java.util.Map;
 
 public class Marker extends GeometryLayer {
 
+    /*
+            PositionAnchor: "center" | "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right"
+         */
+    enum PositionAnchor {
+        CENTER, TOP, BOTTOM, LEFT, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT;
+
+        @Override
+        public String toString() {
+            return this.name().toLowerCase().replace("_", "-");
+        }
+
+    }
+
 
     private Popover popover;
     private List<String> listeners;
     private SerializableSupplier<Component> popoverContentSupplier;
 
-    Marker(MapLibre map, String id, Coordinate coordinate) {
+    protected Marker(MapLibre map, String id, Coordinate coordinate) {
         super(map, id, new GeometryFactory().createPoint(coordinate));
     }
 
@@ -56,7 +71,7 @@ public class Marker extends GeometryLayer {
             popover = new Popover();
             popover.addThemeVariants(PopoverVariant.ARROW);
             addClickListener(() -> {
-                openPopover(contentSupplier);
+                openPopover(popoverContentSupplier);
             });
             popover.addOpenedChangeListener(e -> {
                 if (!e.isOpened() && e.isFromClient()) {
@@ -65,6 +80,9 @@ public class Marker extends GeometryLayer {
                     popover.setFor(id);
                 }
             });
+        } else {
+            popover.removeAll();
+            popover.add(popoverContentSupplier.get());
         }
         return popover;
     }
@@ -131,7 +149,7 @@ public class Marker extends GeometryLayer {
         }
     }
 
-    public void setColor(String color) {
+    public void setColor(Color color) {
         map.js("""
                     const marker = component.markers['$id'];
                     const element = marker.getElement();
@@ -164,7 +182,6 @@ public class Marker extends GeometryLayer {
     public void setOffset(double x, double y) {
         map.js("""
                     const marker = component.markers['$id'];
-                    debugger;
                     marker.setOffset([$x, $y]);
                 """, Map.of("id", id, "x", x, "y", y));
     }
@@ -174,6 +191,20 @@ public class Marker extends GeometryLayer {
                     const marker = component.markers['$id'];
                     marker.setRotation($rotation);
                 """, Map.of("id", id, "rotation", rotationInDegrees));
+    }
+
+    public void setRotationAlignment(SymbolLayout.RotationAlignment rotationAlignment) {
+        map.js("""
+                    const marker = component.markers['$id'];
+                    marker.setRotationAlignment('$rotationAlignment');
+                """, Map.of("id", id, "rotationAlignment", rotationAlignment.toString()));
+    }
+
+    public void setAnchor(PositionAnchor positionAnchor) {
+        map.js("""
+                    const marker = component.markers['$id'];
+                    marker._anchor = '$positionAnchor';
+                """, Map.of("id", id, "positionAnchor", positionAnchor.toString()));
     }
 
     public interface DragEndListener {

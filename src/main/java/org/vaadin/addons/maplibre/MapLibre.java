@@ -7,6 +7,7 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DomEvent;
@@ -27,14 +28,17 @@ import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.parttio.vaadinjsloader.JSLoader;
 import org.vaadin.addons.maplibre.dto.AbstractKebabCasedDto;
 import org.vaadin.addons.maplibre.dto.AbstractMapSource;
-import org.vaadin.addons.maplibre.dto.FlyToOptions;
+import org.vaadin.addons.maplibre.dto.AnimationOptions;
+import org.vaadin.addons.maplibre.dto.FitBoundsOptions;
 import org.vaadin.addons.maplibre.dto.LayerDefinition;
 import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
+import org.vaadin.addons.maplibre.dto.Projection;
 import org.vaadin.addons.velocitycomponent.AbstractVelocityJsComponent;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,36 +76,23 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     public MapLibre() {
 
-        MapLibreBaseMapProvider provider = null;
+        BaseMapConfigurer provider = null;
         try {
             Instantiator instantiator = VaadinService.getCurrent().getInstantiator();
-            provider = instantiator.getOrCreate(MapLibreBaseMapProvider.class);
+            provider = instantiator.getOrCreate(BaseMapConfigurer.class);
         } catch (Exception e) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "Error finding base map provider", e);
+            Logger.getLogger(getClass().getName()).log(Level.FINE, "Error finding base map provider", e);
         }
         if(provider == null) {
             // No bean to configure found, check context (original hack)
             VaadinContext context = VaadinService.getCurrent().getContext();
-            provider = context.getAttribute(MapLibreBaseMapProvider.class);
+            provider = context.getAttribute(BaseMapConfigurer.class);
         }
-        if (provider == null) {
-            // this is probably never what actual people want, log warning?
-            this.styleUrl = "https://demotiles.maplibre.org/style.json";
-            return;
+        if(provider == null) {
+            // this is probably useful only for demos
+            provider = map -> map.styleUrl  = "https://demotiles.maplibre.org/style.json";
         }
-        Object o = provider.provideBaseStyle();
-
-        if (o instanceof String url) {
-            styleUrl = url;
-        } else if (o instanceof InputStream styleJson) {
-            try {
-                this.styleJson = IOUtils.toString(styleJson, Charset.defaultCharset());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else if (o instanceof URI uri) {
-            styleUrl = uri.toString();
-        }
+        provider.configure(this);
     }
 
     public MapLibre(URI styleUrl) {
@@ -113,6 +104,51 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     }
 
     public MapLibre(InputStream styleJson) {
+        try {
+            this.styleJson = IOUtils.toString(styleJson, Charset.defaultCharset());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * In case the empty constructor is used, this initialisation method (or one of its
+     * overloaded variantes) needs to be called before the component is added to the UI.
+     * Most likely you'll call this from your BaseMapConfigurer.
+     *
+     * @param styleJsonOrURI the style as raw JSON or as string uri
+     */
+    public void initStyle(String styleJsonOrURI) {
+        if(styleJsonOrURI.startsWith("{")) {
+            this.styleJson = styleJsonOrURI;
+        } else {
+            try {
+                styleUrl = new URI(styleJsonOrURI).toString();
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * In case the empty constructor is used, this initialisation method (or one of its
+     * overloaded variantes) needs to be called before the component is added to the UI.
+     * Most likely you'll call this from your BaseMapConfigurer.
+     *
+     * @param styleUri the URI from which the style will be loaded
+     */
+    public void initStyle(URI styleUri) {
+        this.styleUrl = styleUri.toString();
+    }
+
+    /**
+     * In case the empty constructor is used, this initialisation method (or one of its
+     * overloaded variantes) needs to be called before the component is added to the UI.
+     * Most likely you'll call this from your BaseMapConfigurer.
+     *
+     * @param styleJson the input stream from where the style JSON is loaded from
+     */
+    public void initStyle(InputStream styleJson) {
         try {
             this.styleJson = IOUtils.toString(styleJson, Charset.defaultCharset());
         } catch (IOException e) {
@@ -145,7 +181,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     protected void onAttach(AttachEvent attachEvent) {
         init();
         if (detached) {
-            throw new IllegalStateException("Re-attaching old map not currently supported!");
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Re-attaching old map not currently supported. If this is not a re-sync request by Flow, the map might be non-functional.");
         }
         super.onAttach(attachEvent);
     }
@@ -165,7 +201,10 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
      * to load it from a local file instead of from unpkg.com.</p>
      */
     protected void loadMapLibreJs() {
-        JSLoader.loadUnpkg(this, "maplibre-gl", "4.7.1", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
+        UI current = UI.getCurrent();
+        if(current != null) {
+            JSLoader.loadUnpkg(this, "maplibre-gl", "5.5.0", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
+        }
     }
 
     public Double getZoomLevel() {
@@ -349,6 +388,17 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 """, Map.of("name", name, "sourceDeclarationJson", source));
     }
 
+    public void addSprite(String name, String spriteUrl) {
+        js("""
+            map.addSprite("$name", "$spriteUrl");
+        """, Map.of("name", name, "spriteUrl", spriteUrl));
+    }
+
+    public void setProjection(Projection projection) {
+        js("""
+            map.setProjection($projection);
+        """, Map.of("projection", projection));
+    }
 
     public Marker addMarker(Point point) {
         return addMarker(point.getX(), point.getY());
@@ -408,7 +458,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         js(envelope);
     }
 
-    public void flyTo(FlyToOptions flyToOptions) {
+    public void flyTo(AnimationOptions flyToOptions) {
         js("map.flyTo(%s)".formatted(flyToOptions));
     }
 
@@ -513,6 +563,13 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     }
 
     public void fitBounds(Geometry geometry) {
+        this.fitBounds(geometry, new FitBoundsOptions(){{
+            // Not sure why this used to be a default, TODO consider removing.
+            setPadding(20);
+        }});
+    }
+
+    public void fitBounds(Geometry geometry, FitBoundsOptions options) {
         String geojson = new GeoJsonWriter().write(geometry.getEnvelope().getBoundary());
         js("""
                 const bbox = JSON.parse('$bbox');
@@ -520,8 +577,9 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 bbox.coordinates.forEach(c => {
                     b.extend([c[0],c[1]]);
                 });
-                map.fitBounds(b, {padding: 20});
-                """, Map.of("bbox", geojson));
+                const options = $options;
+                map.fitBounds(b, options);
+                """, Map.of("bbox", geojson, "options", options));
     }
 
     public void addMoveEndListener(MoveEndListener listener) {
@@ -600,6 +658,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     	  				env.expandToInclude(gm.getGeometry().getEnvelopeInternal());
           }
       });
+      if (env.isNull()) return;
 	  		env.expandBy(deltaX, deltaY);
 	  		fitTo(env, 0.0, easeTo, fitToMapMillis);
     }
@@ -696,12 +755,12 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public class MapClickEvent {
         private final Coordinate coordinate;
         private final Coordinate pixelCoordinate;
-        private GeometryLayer layer;
+        private Layer layer;
 
         public MapClickEvent(DomEvent domEvent) {
             if (domEvent.getEventData().hasKey("event.featureId")) {
                 String fId = domEvent.getEventData().getString("event.featureId");
-                this.layer = (GeometryLayer) idToLayer.get(fId);
+                this.layer = idToLayer.get(fId);
             }
             try {
                 LngLatRecord ll = AbstractKebabCasedDto.mapper.readValue(
@@ -723,7 +782,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
             return MapLibre.gf.createPoint(coordinate);
         }
 
-        public GeometryLayer getLayer() {
+        public Layer getLayer() {
             return layer;
         }
 
