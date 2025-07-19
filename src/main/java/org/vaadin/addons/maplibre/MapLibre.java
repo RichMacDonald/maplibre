@@ -588,6 +588,22 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         }
     }
 
+    /**
+     * @param deltaX the distance to expand the envelope along the the X axis
+     * @param deltaY the distance to expand the envelope along the the Y axis
+     */
+    public void fitToContent(double deltaX, double deltaY, boolean easeTo, int fitToMapMillis) {
+	  		Envelope env = new Envelope();
+	  		env.setToNull();
+      idToLayer.values().forEach(layer -> {
+          if(layer instanceof GeometryLayer gm) {
+    	  				env.expandToInclude(gm.getGeometry().getEnvelopeInternal());
+          }
+      });
+	  		env.expandBy(deltaX, deltaY);
+	  		fitTo(env, 0.0, easeTo, fitToMapMillis);
+    }
+
     public void removeAll() {
         ArrayList<Layer> layers = new ArrayList<>(this.idToLayer.values());
         layers.forEach(l -> removeLayer(l));
