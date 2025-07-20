@@ -13,4 +13,8 @@ public class Layer {
     public void remove() {
         map.removeLayer(this);
     }
+
+    public String getId() {
+    		return id;
+    }
 }

@@ -646,10 +646,6 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         }
     }
 
-    /**
-     * @param deltaX the distance to expand the envelope along the the X axis
-     * @param deltaY the distance to expand the envelope along the the Y axis
-     */
     public void fitToContent(double deltaX, double deltaY, boolean easeTo, int fitToMapMillis) {
 	  		Envelope env = new Envelope();
 	  		env.setToNull();
@@ -682,6 +678,10 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     public void setCursor(String crosshair) {
         js("map.getCanvas().style.cursor = '$cursor';", Map.of("cursor", crosshair));
+    }
+
+    public HashMap<String, Layer> getIdToLayer(){
+    		return idToLayer;
     }
 
     public interface MoveEndListener {
