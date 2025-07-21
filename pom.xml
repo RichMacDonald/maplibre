@@ -7,7 +7,7 @@
     <version>1.5.1-SNAPSHOT-rjm</version>
     <name>MapLibreGL }&gt; add-on</name>
     <description>An extension to Vaadin that provides a Java API for MapLibreGL slippy map component with modern vector layer support.</description>
-    <url>https://github.com/parttio/maplibre</url>
+    <url>https://github.com/RichMacDonald/maplibre</url>
 
     <properties>
         <vaadin.version>24.6.3</vaadin.version>
@@ -61,10 +61,14 @@
     </scm>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
+<!--        <snapshotRepository>-->
+<!--            <id>ossrh</id>-->
+<!--            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>-->
+<!--        </snapshotRepository>-->
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/RichMacDonald/maplibre</url>
+        </repository>
     </distributionManagement>
 
     <issueManagement>
