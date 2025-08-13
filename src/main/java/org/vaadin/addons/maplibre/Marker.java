@@ -207,6 +207,27 @@ public class Marker extends GeometryLayer {
                 """, Map.of("id", id, "positionAnchor", positionAnchor.toString()));
     }
 
+    public void addClassName(String classname) {
+        map.js("""
+                    const marker = component.markers['$id'];
+                    marker.addClassName('$classname');
+                """, Map.of("id", id, "classname", classname));
+    }
+
+    public void removeClassName(String classname) {
+        map.js("""
+                    const marker = component.markers['$id'];
+                    marker.removeClassName('$classname');
+                """, Map.of("id", id, "classname", classname));
+    }
+
+    public void toggleClassName(String classname) {
+        map.js("""
+                    const marker = component.markers['$id'];
+                    marker.toggleClassName('$classname');
+                """, Map.of("id", id, "classname", classname));
+    }
+
     public interface DragEndListener {
         void dragEnd(Coordinate coordinate);
     }
