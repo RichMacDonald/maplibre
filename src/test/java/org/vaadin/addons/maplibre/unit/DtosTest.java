@@ -1,6 +1,5 @@
 package org.vaadin.addons.maplibre.unit;
 
-import in.virit.color.Color;
 import in.virit.color.RgbColor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -8,14 +7,11 @@ import org.vaadin.addons.maplibre.LinePaint;
 import org.vaadin.addons.maplibre.dto.Bounds;
 import org.vaadin.addons.maplibre.dto.CircleLayerDefinition;
 import org.vaadin.addons.maplibre.dto.CirclePaint;
-import org.vaadin.addons.maplibre.dto.ColorSerializer;
 import org.vaadin.addons.maplibre.dto.LayerDefinition;
 import org.vaadin.addons.maplibre.dto.SymbolLayerDefinition;
 import org.vaadin.addons.maplibre.dto.VectorMapSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.module.SimpleModule;
 
 public class DtosTest {
 
@@ -104,6 +100,7 @@ public class DtosTest {
 
                 setSupplementalJson("""
                 {
+                    "paint": {
                         "circle-radius": [
                           "interpolate",
                           ["exponential", 1.55],

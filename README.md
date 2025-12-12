@@ -32,7 +32,8 @@ This deploys demo at http://localhost:8080
 
 ### Integration test
 
-TODO add integration tests :-)
+There are a couple of Playwright smoke tests in the src/test, but makes sense to check essential
+test UIs manually.
 
 ## Publishing to Vaadin Directory
 
