@@ -162,6 +162,7 @@ public class Marker extends GeometryLayer {
 
     public void setHtml(String rawHtml) {
         rawHtml = rawHtml.replaceAll("\n", "");
+        rawHtml = rawHtml.replaceAll("'", "\\\\'");
         map.js("""
                     const marker = component.markers['$id'];
                     const element = marker.getElement();
