@@ -1,7 +1,5 @@
 package org.vaadin.addons.maplibre.unit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.vaadin.addons.maplibre.dto.FlyToOptions;
 import org.vaadin.addons.maplibre.dto.LngLat;

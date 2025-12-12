@@ -53,7 +53,7 @@ public class DrawControl {
         if (modeChangeListeners == null) {
             modeChangeListeners = new ArrayList<>();
             map.getElement().addEventListener("modechange", e -> {
-                ModeChangeEvent event = new ModeChangeEvent(DrawMode.valueOf(e.getEventData().getString("event.mode").toUpperCase()));
+                ModeChangeEvent event = new ModeChangeEvent(DrawMode.valueOf(e.getEventData().get("event.mode").asString().toUpperCase()));
                 modeChangeListeners.forEach(l -> l.onEvent(event));
             }).addEventData("event.mode");
         }
@@ -64,7 +64,8 @@ public class DrawControl {
         if (changeListeners == null) {
             changeListeners = new ArrayList<>();
             map.getElement().addEventListener("change", e -> {
-                String geojson = e.getEventData().getString("event.geom");
+                // TODO figure out if could just tranfer as json and use jackson
+                String geojson = e.getEventData().get("event.geom").asString();
                 try {
                     GeometryCollection geom = (GeometryCollection) new GeoJsonReader().read(geojson);
                     GeometryChangeEvent event = new GeometryChangeEvent(geom);

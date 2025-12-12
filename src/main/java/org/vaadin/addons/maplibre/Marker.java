@@ -116,8 +116,8 @@ public class Marker extends GeometryLayer {
                     marker.setDraggable(true);
                 """, Map.of("id", id));
         map.getElement().addEventListener("de-" + id, e -> {
-                    double lat = e.getEventData().getNumber("event.lat");
-                    double lng = e.getEventData().getNumber("event.lng");
+                    double lat = e.getEventData().get("event.lat").asDouble();
+                    double lng = e.getEventData().get("event.lng").asDouble();
                     Coordinate coordinate = new Coordinate(lng, lat);
                     listener.dragEnd(coordinate);
                 }).addEventData("event.lat")

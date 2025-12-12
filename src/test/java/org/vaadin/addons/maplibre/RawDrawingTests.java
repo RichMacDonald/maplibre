@@ -3,6 +3,8 @@ package org.vaadin.addons.maplibre;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.Route;
 import in.virit.color.NamedColor;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -11,8 +13,11 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import in.virit.color.Color;
+import org.vaadin.addons.parttio.colorful.RgbaColorPicker;
 import org.vaadin.firitin.components.RichText;
 import org.vaadin.firitin.components.button.VButton;
+import org.vaadin.firitin.components.html.VDiv;
+import org.vaadin.firitin.components.html.VSpan;
 import org.vaadin.firitin.components.orderedlayout.VHorizontalLayout;
 import org.vaadin.firitin.components.orderedlayout.VVerticalLayout;
 
@@ -27,6 +32,9 @@ import java.util.concurrent.CompletableFuture;
 public class RawDrawingTests extends VVerticalLayout {
     private final MapLibre map;
 
+
+    private Color color = NamedColor.BLUE;
+
     public RawDrawingTests() {
         add(new RichText().withMarkDown("""
                 # Drawing geometries with mapbox-gl-draw
@@ -40,14 +48,27 @@ public class RawDrawingTests extends VVerticalLayout {
             withExpanded(map);
 
             add(new VHorizontalLayout(
+
+                    new RgbaColorPicker() {{
+                        setValue(color.toRgbColor());
+                        addValueChangeListener(e -> {
+                            color = e.getValue();
+                            Notification.show("").add(new VSpan(){{
+                                setText("Color now: " + color.toString());
+                                getStyle().setWidth("20px");
+                                getStyle().setHeight("20px");
+                                getStyle().setBackgroundColor(color);
+                            }});
+                        });
+                    }},
                     new VButton("Draw polygon (CTRL-P)", e -> {
                         drawPolygon().thenAccept(polygon -> {
-                            map.addFillLayer(polygon, new FillPaint(NamedColor.RED, 0.3));
+                            map.addFillLayer(polygon, new FillPaint(color, 0.3));
                         });
                     }).withClickShortcut(Key.KEY_P, KeyModifier.CONTROL),
                     new VButton("Draw linestring (CTRL-L)", e -> {
                         drawLineString().thenAccept(geom -> {
-                            map.addLineLayer(geom, new LinePaint(NamedColor.BLUE, 1.0));
+                            map.addLineLayer(geom, new LinePaint(color, 1.0));
                         });
                     }).withClickShortcut(Key.KEY_L, KeyModifier.CONTROL))
             );

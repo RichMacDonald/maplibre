@@ -1,8 +1,5 @@
 package org.vaadin.addons.maplibre.unit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.vaadin.addons.maplibre.dto.expressions.All;
@@ -13,6 +10,8 @@ import org.vaadin.addons.maplibre.dto.expressions.Interpolate;
 import org.vaadin.addons.maplibre.dto.expressions.NotEquals;
 import org.vaadin.addons.maplibre.dto.expressions.PropertyEquals;
 import org.vaadin.addons.maplibre.dto.expressions.ZoomStep;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 public class ExpressionSerializationTest {
 
@@ -106,13 +105,9 @@ public class ExpressionSerializationTest {
 
 
     static String prettyPrint(Object json) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(json.toString());
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(json.toString());
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
     }
 
 }
