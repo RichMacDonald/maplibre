@@ -10,7 +10,7 @@
     <url>https://github.com/parttio/maplibre</url>
 
     <properties>
-        <vaadin.version>25.0.0-rc1</vaadin.version>
+        <vaadin.version>25.0.5</vaadin.version>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -104,6 +104,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.21.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
