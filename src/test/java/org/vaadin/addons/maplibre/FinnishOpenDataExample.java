@@ -1,7 +1,5 @@
 package org.vaadin.addons.maplibre;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Pre;
@@ -19,6 +17,8 @@ import in.virit.color.RgbColor;
 import org.vaadin.addons.maplibre.dto.VectorMapSource;
 import org.vaadin.firitin.components.RichText;
 import org.vaadin.firitin.components.orderedlayout.VHorizontalLayout;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -93,6 +93,7 @@ public class FinnishOpenDataExample extends VerticalLayout {
                     highlightedLayers.add(addFillLayer(polygon, new FillPaint(NamedColor.RED, 0.5)));
                 }
                 // Show the raw (but formatted) details in a pre element
+                // TODO PrettyPrinter
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode jsonNode = mapper.readTree(responsegeojson);
                 String formatted = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);

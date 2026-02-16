@@ -1,6 +1,5 @@
 package org.vaadin.addons.maplibre;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.DetachEvent;
@@ -13,8 +12,6 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
-import elemental.json.JsonObject;
-import org.apache.commons.io.IOUtils;
 import org.apache.velocity.VelocityContext;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -34,12 +31,13 @@ import org.vaadin.addons.maplibre.dto.LayerDefinition;
 import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
 import org.vaadin.addons.maplibre.dto.Projection;
 import org.vaadin.addons.velocitycomponent.AbstractVelocityJsComponent;
+import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -105,7 +103,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     public MapLibre(InputStream styleJson) {
         try {
-            this.styleJson = IOUtils.toString(styleJson, Charset.defaultCharset());
+            this.styleJson = new String(styleJson.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -150,7 +148,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
      */
     public void initStyle(InputStream styleJson) {
         try {
-            this.styleJson = IOUtils.toString(styleJson, Charset.defaultCharset());
+            this.styleJson = new String(styleJson.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -465,11 +463,11 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public void flyTo(double x, double y, Double zoom) {
         js("""
                     const opts = {
-                        center: [%s, %s]
+                        center: [%s, %s]                    
                     }
                     const z = %s;
                     if(z != null) {
-                        opts.zoom = z;
+                        opts.zoom = z;                   
                     }
                     map.flyTo(opts);
                 """.formatted(x, y, zoom));
@@ -546,7 +544,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                         evt.point = JSON.stringify(e.point);
                         component.dispatchEvent(evt);
                     });
-
+                                
                     """);
 
             getElement().addEventListener("map-click", domEvent -> {
@@ -617,8 +615,9 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
      */
     public CompletableFuture<ViewPort> getViewPort() {
         var res = new CompletableFuture<ViewPort>();
+        // TODO fix with proper Json Mapping with Jackson
         getElement().callJsFunction("getViewPort")
-                .then(JsonObject.class,
+                .then(JsonNode.class,
                         jso -> res.complete(ViewPort.of(jso)));
         return res;
     }
@@ -680,7 +679,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         js("map.getCanvas().style.cursor = '$cursor';", Map.of("cursor", crosshair));
     }
 
-    public HashMap<String, Layer> getIdToLayer(){
+    public Map<String, Layer> getIdToLayer(){
     		return idToLayer;
     }
 
@@ -697,16 +696,16 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public record ViewPort(Point southWest, Point northEast, Point center, double bearing, double pitch) {
 
 
-        public static ViewPort of(JsonObject o) {
+        public static ViewPort of(JsonNode o) {
             var southWest = gf.createPoint(new Coordinate(
-                    o.getObject("sw").getNumber("lng"),
-                    o.getObject("sw").getNumber("lat")));
-            double nelat = o.getObject("ne").getNumber("lat");
-            double nelng = o.getObject("ne").getNumber("lng");
+                    o.get("sw").get("lng").asDouble(),
+                    o.get("sw").get("lat").asDouble()));
+            double nelat = o.get("ne").get("lat").asDouble();
+            double nelng = o.get("ne").get("lng").asDouble();
             var northEast = gf.createPoint(new Coordinate(nelng, nelat));
-            double clat = o.getObject("c").getNumber("lat");
-            double clng = o.getObject("c").getNumber("lng");
-            return new ViewPort(southWest, northEast, gf.createPoint(new Coordinate(clng, clat)), o.getNumber("bearing"), o.getNumber("pitch"));
+            double clat = o.get("c").get("lat").asDouble();
+            double clng = o.get("c").get("lng").asDouble();
+            return new ViewPort(southWest, northEast, gf.createPoint(new Coordinate(clng, clat)), o.get("bearing").asDouble(), o.get("pitch").asDouble());
         }
 
         public Polygon getBounds() {
@@ -731,8 +730,8 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         double zoomLevel;
 
         public MoveEndEvent(DomEvent domEvent) {
-            this.viewPort = ViewPort.of(domEvent.getEventData().getObject("event.viewport"));
-            this.zoomLevel = domEvent.getEventData().getNumber("event.zoom");
+            this.viewPort = ViewPort.of(domEvent.getEventData().get("event.viewport"));
+            this.zoomLevel = domEvent.getEventData().get("event.zoom").asDouble();
             MapLibre.this.zoomLevel = this.zoomLevel;
         }
 
@@ -758,20 +757,17 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         private Layer layer;
 
         public MapClickEvent(DomEvent domEvent) {
-            if (domEvent.getEventData().hasKey("event.featureId")) {
-                String fId = domEvent.getEventData().getString("event.featureId");
+            if (domEvent.getEventData().has("event.featureId")) {
+                String fId = domEvent.getEventData().get("event.featureId").asString();
                 this.layer = idToLayer.get(fId);
             }
-            try {
-                LngLatRecord ll = AbstractKebabCasedDto.mapper.readValue(
-                        domEvent.getEventData().getString("event.lngLat"), LngLatRecord.class);
-                PointRecord p = AbstractKebabCasedDto.mapper.readValue(
-                        domEvent.getEventData().getString("event.point"), PointRecord.class);
-                this.coordinate = new Coordinate(ll.lng, ll.lat);
-                this.pixelCoordinate = new Coordinate(p.x, p.y);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+            // TODO refactor to use new proper mapping somehow
+            LngLatRecord ll = AbstractKebabCasedDto.mapper.readValue(
+                    domEvent.getEventData().get("event.lngLat").asString(), LngLatRecord.class);
+            PointRecord p = AbstractKebabCasedDto.mapper.readValue(
+                    domEvent.getEventData().get("event.point").asString(), PointRecord.class);
+            this.coordinate = new Coordinate(ll.lng, ll.lat);
+            this.pixelCoordinate = new Coordinate(p.x, p.y);
         }
 
         public Coordinate getCoordinate() {

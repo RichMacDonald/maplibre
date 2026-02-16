@@ -1,15 +1,14 @@
 package org.vaadin.addons.maplibre.dto;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
 
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-public class LngLatSerializer extends JsonSerializer<LngLat> {
-
+public class LngLatSerializer extends ValueSerializer<LngLat> {
     @Override
-    public void serialize(LngLat value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serialize(LngLat value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
         gen.writeArray(new double[]{value.lng(), value.lat()},0,2);
     }
 

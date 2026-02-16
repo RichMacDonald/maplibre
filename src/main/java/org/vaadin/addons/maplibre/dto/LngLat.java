@@ -1,8 +1,8 @@
 package org.vaadin.addons.maplibre.dto;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(using = LngLatSerializer.class)
 public record LngLat(double lng, double lat) {

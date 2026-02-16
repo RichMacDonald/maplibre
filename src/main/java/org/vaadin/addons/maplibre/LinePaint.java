@@ -3,6 +3,7 @@ package org.vaadin.addons.maplibre;
 import in.virit.color.Color;
 import org.vaadin.addons.maplibre.dto.AbstractKebabCasedDto;
 import org.vaadin.addons.maplibre.dto.expressions.Expression;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 public class LinePaint extends AbstractKebabCasedDto {
 

@@ -1,7 +1,6 @@
 package org.vaadin.addons.maplibre.finnishterrainmap;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.router.Route;
 import in.virit.color.HexColor;
 import in.virit.color.RgbColor;
@@ -173,13 +172,9 @@ public class Maastokartta extends MapLibre {
             addSourceLayer(new TekstiPaikannimi());
             addSourceLayer(new TekstiMajorCity());
 
-            try {
-                System.out.println(
-                        mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
-                );
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+            System.out.println(
+                    mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
+            );
 
         }
 
@@ -404,6 +399,18 @@ public class Maastokartta extends MapLibre {
             addSourceLayer(new BasicFill("hietikko", "#e8e8b0"));
             addSourceLayer(new BasicFill("louhos", "#dde5dd"));
             addSourceLayer(new BasicFill("kallioalue", "#c6c6c6"));
+            addSourceLayer(new CircleLayerDefinition() {{
+                setSource("mtk");
+                setSourceLayer("kalliosymboli");
+                setPaint(new CirclePaint() {{
+                    setCircleRadius(Interpolate.linear().zoom(
+                            new org.vaadin.addons.maplibre.dto.expressions.ZoomStep(13, 1),
+                            new org.vaadin.addons.maplibre.dto.expressions.ZoomStep(25, 30)
+                    ));
+                    setCircleColor("#c6c6c6");
+                    setMinZoom(13);
+                }});
+            }});
 
 
             addSourceLayer(new MaastokuvionReuna());

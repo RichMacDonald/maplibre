@@ -116,8 +116,8 @@ public class Marker extends GeometryLayer {
                     marker.setDraggable(true);
                 """, Map.of("id", id));
         map.getElement().addEventListener("de-" + id, e -> {
-                    double lat = e.getEventData().getNumber("event.lat");
-                    double lng = e.getEventData().getNumber("event.lng");
+                    double lat = e.getEventData().get("event.lat").asDouble();
+                    double lng = e.getEventData().get("event.lng").asDouble();
                     Coordinate coordinate = new Coordinate(lng, lat);
                     listener.dragEnd(coordinate);
                 }).addEventData("event.lat")
@@ -162,6 +162,7 @@ public class Marker extends GeometryLayer {
 
     public void setHtml(String rawHtml) {
         rawHtml = rawHtml.replaceAll("\n", "");
+        rawHtml = rawHtml.replaceAll("'", "\\\\'");
         map.js("""
                     const marker = component.markers['$id'];
                     const element = marker.getElement();

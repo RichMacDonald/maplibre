@@ -1,21 +1,28 @@
 package org.vaadin.addons.maplibre.unit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import in.virit.color.RgbColor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.vaadin.addons.maplibre.LinePaint;
 import org.vaadin.addons.maplibre.dto.Bounds;
 import org.vaadin.addons.maplibre.dto.CircleLayerDefinition;
 import org.vaadin.addons.maplibre.dto.CirclePaint;
 import org.vaadin.addons.maplibre.dto.LayerDefinition;
 import org.vaadin.addons.maplibre.dto.SymbolLayerDefinition;
 import org.vaadin.addons.maplibre.dto.VectorMapSource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 public class DtosTest {
 
+    @Test void printColor() {
+        LinePaint linePaint = new LinePaint();
+        linePaint.setLineColor(new RgbColor(0,0,0));
+        Assertions.assertTrue(linePaint.toString().contains("rgb(0 0 0)"));
+    }
+
     @Test
-    public void testBounds() throws JsonProcessingException {
+    public void testBounds() {
         var bounds = new Bounds(1, 2, 3, 4);
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.valueToTree(bounds);
@@ -30,7 +37,7 @@ public class DtosTest {
     }
 
     @Test
-    public void testSources() throws JsonProcessingException {
+    public void testSources() {
         VectorMapSource vectorMapSource = new VectorMapSource("https://example.com/foo/bar");
 
         var mapper = new ObjectMapper();
@@ -93,6 +100,7 @@ public class DtosTest {
 
                 setSupplementalJson("""
                 {
+                    "paint": {
                         "circle-radius": [
                           "interpolate",
                           ["exponential", 1.55],
@@ -157,13 +165,9 @@ public class DtosTest {
     }
 
     static String prettyPrint(Object json) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(json.toString());
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(json.toString());
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
     }
 
 }
