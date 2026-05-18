@@ -66,8 +66,8 @@
 <!--            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>-->
 <!--        </snapshotRepository>-->
         <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/RichMacDonald/maplibre</url>
+            <id>github-maplibre</id>
+            <url>https://maven.pkg.github.com/richmacdonald/maplibre</url>
         </repository>
     </distributionManagement>
 
